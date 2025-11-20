@@ -15,8 +15,9 @@ const cartItemSchema = new mongoose.Schema({
 }, { _id: false });
 
 const cartSchema = new mongoose.Schema({
-  sessionId: {
-    type: String,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
     unique: true,
     index: true
@@ -31,13 +32,13 @@ const cartSchema = new mongoose.Schema({
 });
 
 // Auto-update updatedAt on save
-cartSchema.pre('save', function(next) {
+cartSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });
 
 // Method to calculate total
-cartSchema.methods.calculateTotal = async function() {
+cartSchema.methods.calculateTotal = async function () {
   await this.populate('items.product');
   return this.items.reduce((total, item) => {
     return total + (item.product.price * item.quantity);
@@ -47,4 +48,3 @@ cartSchema.methods.calculateTotal = async function() {
 const Cart = mongoose.model('Cart', cartSchema);
 
 export default Cart;
-

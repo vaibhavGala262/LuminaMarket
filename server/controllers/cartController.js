@@ -1,15 +1,15 @@
 import Cart from '../models/Cart.js';
 import Product from '../models/Product.js';
 
-// Get or create cart
+// Get or create cart for authenticated user
 export const getCart = async (req, res) => {
   try {
-    const { sessionId } = req.params;
-    
-    let cart = await Cart.findOne({ sessionId }).populate('items.product');
-    
+    const userId = req.user.userId;
+
+    let cart = await Cart.findOne({ userId }).populate('items.product');
+
     if (!cart) {
-      cart = new Cart({ sessionId, items: [] });
+      cart = new Cart({ userId, items: [] });
       await cart.save();
     }
 
@@ -29,7 +29,7 @@ export const getCart = async (req, res) => {
 // Add item to cart
 export const addToCart = async (req, res) => {
   try {
-    const { sessionId } = req.params;
+    const userId = req.user.userId;
     const { productId, quantity = 1 } = req.body;
 
     // Verify product exists
@@ -49,10 +49,10 @@ export const addToCart = async (req, res) => {
       });
     }
 
-    let cart = await Cart.findOne({ sessionId });
+    let cart = await Cart.findOne({ userId });
 
     if (!cart) {
-      cart = new Cart({ sessionId, items: [] });
+      cart = new Cart({ userId, items: [] });
     }
 
     // Check if product already in cart
@@ -87,7 +87,8 @@ export const addToCart = async (req, res) => {
 // Update cart item quantity
 export const updateCartItem = async (req, res) => {
   try {
-    const { sessionId, productId } = req.params;
+    const userId = req.user.userId;
+    const { productId } = req.params;
     const { quantity } = req.body;
 
     if (quantity < 1) {
@@ -97,7 +98,7 @@ export const updateCartItem = async (req, res) => {
       });
     }
 
-    const cart = await Cart.findOne({ sessionId });
+    const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({
         success: false,
@@ -145,9 +146,10 @@ export const updateCartItem = async (req, res) => {
 // Remove item from cart
 export const removeFromCart = async (req, res) => {
   try {
-    const { sessionId, productId } = req.params;
+    const userId = req.user.userId;
+    const { productId } = req.params;
 
-    const cart = await Cart.findOne({ sessionId });
+    const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({
         success: false,
@@ -178,9 +180,9 @@ export const removeFromCart = async (req, res) => {
 // Clear cart
 export const clearCart = async (req, res) => {
   try {
-    const { sessionId } = req.params;
+    const userId = req.user.userId;
 
-    const cart = await Cart.findOne({ sessionId });
+    const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({
         success: false,
@@ -204,4 +206,3 @@ export const clearCart = async (req, res) => {
     });
   }
 };
-

@@ -1,18 +1,26 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
+// Token management
+export const getAuthToken = () => localStorage.getItem('lumina_auth_token');
+export const setAuthToken = (token) => localStorage.setItem('lumina_auth_token', token);
+export const removeAuthToken = () => localStorage.removeItem('lumina_auth_token');
+
 // Helper function for API calls
 const apiCall = async (endpoint, options = {}) => {
   try {
+    const token = getAuthToken();
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         ...options.headers
       },
       ...options
     });
 
     const data = await response.json();
-    
+
     if (!response.ok) {
       throw new Error(data.message || 'API request failed');
     }
@@ -23,6 +31,7 @@ const apiCall = async (endpoint, options = {}) => {
     throw error;
   }
 };
+
 
 // Product API
 export const productAPI = {
@@ -36,46 +45,50 @@ export const productAPI = {
     const queryString = params.toString();
     return apiCall(`/products${queryString ? `?${queryString}` : ''}`);
   },
-  
+
   getById: (id) => apiCall(`/products/${id}`),
-  
+
   create: (product) => apiCall('/products', {
     method: 'POST',
     body: JSON.stringify(product)
   }),
-  
-  update: (id, product) => apiCall(`/products/${id}`, {
+
+  update: (id, product) => apiCall(`/ products / ${id}`, {
     method: 'PUT',
     body: JSON.stringify(product)
   }),
-  
-  delete: (id) => apiCall(`/products/${id}`, {
+
+  delete: (id) => apiCall(`/ products / ${id} `, {
     method: 'DELETE'
   }),
-  
+
   getCategories: () => apiCall('/products/categories')
 };
 
-// Cart API
+// Cart API - now uses authenticated endpoints
 export const cartAPI = {
-  get: (sessionId) => apiCall(`/cart/${sessionId}`),
-  
-  addItem: (sessionId, productId, quantity = 1) => apiCall(`/cart/${sessionId}`, {
+  get: () => apiCall('/cart'),
+
+  addItem: (productId, quantity = 1) => apiCall('/cart', {
     method: 'POST',
     body: JSON.stringify({ productId, quantity })
   }),
-  
-  updateItem: (sessionId, productId, quantity) => apiCall(`/cart/${sessionId}/${productId}`, {
+
+  updateItem: (productId, quantity) => apiCall(`/cart/${productId}`, {
     method: 'PUT',
     body: JSON.stringify({ quantity })
   }),
-  
-  removeItem: (sessionId, productId) => apiCall(`/cart/${sessionId}/${productId}`, {
+
+  removeItem: (productId) => apiCall(`/cart/${productId}`, {
     method: 'DELETE'
   }),
-  
-  clear: (sessionId) => apiCall(`/cart/${sessionId}`, {
+
+  clear: () => apiCall('/cart', {
     method: 'DELETE'
+  }),
+
+  checkout: () => apiCall('/cart/checkout', {
+    method: 'POST'
   })
 };
 
@@ -85,17 +98,40 @@ export const searchAPI = {
     method: 'POST',
     body: JSON.stringify({ query })
   }),
-  
-  textSearch: (query) => apiCall(`/search/text?query=${encodeURIComponent(query)}`)
+
+  textSearch: (query) => apiCall(`/ search / text ? query = ${encodeURIComponent(query)} `)
 };
 
-// Generate or get session ID
+// Auth API
+export const authAPI = {
+  register: (username, email, password) => apiCall('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ username, email, password })
+  }),
+
+  login: (email, password) => apiCall('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password })
+  }),
+
+  getProfile: () => apiCall('/auth/profile'),
+
+  logout: () => apiCall('/auth/logout', {
+    method: 'POST'
+  })
+};
+
+// Order API
+export const orderAPI = {
+  getUserOrders: () => apiCall('/orders')
+};
+
+// Generate or get session ID (kept for compatibility but not used for auth)
 export const getSessionId = () => {
   let sessionId = localStorage.getItem('lumina_session_id');
   if (!sessionId) {
-    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)} `;
     localStorage.setItem('lumina_session_id', sessionId);
   }
   return sessionId;
 };
-
