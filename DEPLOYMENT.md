@@ -27,10 +27,12 @@ Fill in the following details:
 | **Name** | `lumina-market-api` (or your choice) |
 | **Region** | Choose the one closest to you |
 | **Branch** | `main` (or your default branch) |
-| **Root Directory** | `.` (leave empty) |
+| **Root Directory** | `.` (Keep this as `.` or empty) |
 | **Runtime** | **Node** |
 | **Build Command** | `npm install` |
 | **Start Command** | `npm start` |
+
+> **Important:** Do **NOT** set Root Directory to `server`. Your `package.json` is in the main folder, so Render needs to build from the root to find dependencies.
 
 ### Step 3: Environment Variables
 Scroll down to **Environment Variables** and add the following:
@@ -41,51 +43,37 @@ Scroll down to **Environment Variables** and add the following:
 | `MONGODB_URI` | `mongodb+srv://...` | Your MongoDB Atlas connection string |
 | `JWT_SECRET` | `your-secret-key` | A long, random string for security |
 | `GEMINI_API_KEY` | `AIza...` | Your Google Gemini API Key |
-| `CLIENT_URL` | `https://your-frontend.vercel.app` | URL of your deployed frontend (add this *after* deploying frontend) |
-
-> **Note:** For `CLIENT_URL`, initially you can set it to `*` or wait until you deploy the frontend. Once the frontend is deployed, update this to the specific frontend URL for security.
+| `CLIENT_URL` | `https://lumina-market.vercel.app` | **Updated:** Your specific frontend URL |
 
 ### Step 4: Deploy
 Click **Create Web Service**. Render will start building and deploying your backend.
-Once finished, you will get a URL like `https://lumina-market-api.onrender.com`.
+Your backend URL is: `https://luminamarket.onrender.com`
 
 ---
 
-## 2️⃣ Deploying Frontend (Vercel/Netlify)
+## 2️⃣ Deploying Frontend (Vercel)
 
-Since this is a Vite React app, it's best deployed on **Vercel** or **Netlify**.
+### Step 1: Configure Environment Variables
+1. Go to your **Vercel Project Dashboard**.
+2. Click **Settings** -> **Environment Variables**.
+3. Add a new variable:
+   - **Key:** `VITE_API_URL`
+   - **Value:** `https://luminamarket.onrender.com/api`
+   - *(Note: You MUST add `/api` at the end)*
 
-### Option A: Vercel (Recommended)
-1. Go to [vercel.com](https://vercel.com) and sign up.
-2. Click **Add New...** -> **Project**.
-3. Import your GitHub repository.
-4. **Build Settings** should be automatically detected:
-   - Framework: **Vite**
-   - Build Command: `npm run build`
-   - Output Directory: `dist`
-5. **Environment Variables**:
-   - `VITE_API_URL`: Set this to your **Render Backend URL** (e.g., `https://lumina-market-api.onrender.com/api`)
-   - *Important: Make sure to append `/api` if your backend routes are prefixed with it, or just the base URL if your api.js handles the `/api` part. In your code, `api.js` appends `/api` if it's not in the env var, or expects the env var to be the full base. Check `services/api.js`.*
-   - *Correction:* Your `services/api.js` has: `const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';`. So set `VITE_API_URL` to `https://lumina-market-api.onrender.com/api`.
-
-### Option B: Netlify
-1. Go to [netlify.com](https://netlify.com).
-2. **Add new site** -> **Import an existing project**.
-3. Connect GitHub and choose your repo.
-4. **Build settings**:
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-5. **Environment Variables**:
-   - Add `VITE_API_URL` with your Render backend URL (including `/api`).
+### Step 2: Redeploy
+1. Go to **Deployments**.
+2. Click the three dots (`...`) on your latest deployment.
+3. Select **Redeploy**.
+4. This ensures the new environment variable is picked up.
 
 ---
 
-## 3️⃣ Final Configuration
+## 3️⃣ Final Configuration (Render)
 
-1. **Update Backend CORS**:
-   - Go back to Render Dashboard -> Your Service -> Environment.
-   - Update `CLIENT_URL` to match your **deployed frontend URL** (e.g., `https://lumina-market-frontend.vercel.app`).
-   - This ensures only your frontend can access the API.
+1. Go back to **Render Dashboard** -> **lumina-market-api** -> **Environment**.
+2. Ensure `CLIENT_URL` is set to `https://lumina-market.vercel.app`.
+3. This allows your Vercel frontend to communicate with the backend (CORS).
 
 ---
 

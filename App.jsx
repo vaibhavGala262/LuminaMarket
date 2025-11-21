@@ -560,7 +560,7 @@ const App = () => {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-slate-100 text-center text-sm text-slate-400">
-            © {new Date().getFullYear()} Lumina Market. Built with React & Gemini.
+            © {new Date().getFullYear()} Lumina Market. Built with Passion.
           </div>
         </div>
       </footer>
